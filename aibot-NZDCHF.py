@@ -1,12 +1,7 @@
 import os
-import re
 import socks
-import telethon
 from telethon import TelegramClient, events
 from dotenv import load_dotenv
-from telethon import connection
-from telethon.network import ConnectionTcpMTProxyIntermediate
-from telethon.sessions import StringSession
 import logging
 
 from telethon.tl.functions.messages import CheckChatInviteRequest
