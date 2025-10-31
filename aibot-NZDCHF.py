@@ -46,7 +46,7 @@ client = TelegramClient('http_session', api_id, api_hash, proxy=proxy)
 async def main():
     await client.start()
     me = await client.get_me()
-    logging.info("Logged in as:", me.username or me.phone)
+    logging.info("Logged in as: {}".format(me.username))
     target_channel_id = await get_channel_id(client, target_channel)
     source_channel_id = await get_channel_id(client, source_channel)
     # -1002765478569 source channel
