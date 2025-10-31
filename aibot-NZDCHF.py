@@ -1,5 +1,5 @@
 import os
-import socks
+# import socks
 from telethon import TelegramClient, events
 from dotenv import load_dotenv
 import logging
@@ -33,14 +33,14 @@ async def get_channel_id(client_, channel_link):
     return channel_id_
 
 
-if proxy_user and proxy_pass:
-    proxy = (socks.SOCKS5, proxy_host, proxy_port, True, proxy_user, proxy_pass)
-else:
-    proxy = ('http', proxy_host, proxy_port)
+# if proxy_user and proxy_pass:
+#     proxy = (socks.SOCKS5, proxy_host, proxy_port, True, proxy_user, proxy_pass)
+# else:
+#     proxy = ('http', proxy_host, proxy_port)
 
 logging.basicConfig(level=logging.INFO)
 
-client = TelegramClient('http_session', api_id, api_hash, proxy=proxy)
+client = TelegramClient('http_session', api_id, api_hash)
 
 
 async def main():
