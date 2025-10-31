@@ -13,7 +13,7 @@ source_channel = os.environ['SOURCE_CHANNEL_AI']
 target_channel = os.environ['TARGET_NZDCHF_BOT']
 
 proxy_host = os.getenv("HTTP_PROXY_HOST", None)
-proxy_port = int(os.getenv("HTTP_PROXY_PORT", None))
+proxy_port = int(os.getenv("HTTP_PROXY_PORT", 0))
 proxy_user = os.getenv("HTTP_PROXY_USER", None)
 proxy_pass = os.getenv("HTTP_PROXY_PASS", None)
 
