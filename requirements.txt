@@ -1,4 +1,6 @@
-re
-socks
-telethon
-dotenv
+asyncio==4.0.0
+dotenv==0.9.9
+python-dotenv==1.2.1
+python-telegram-bot==22.5
+socks==0
+Telethon==1.41.2
