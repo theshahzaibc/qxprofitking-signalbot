@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 import time
 
 # import socks
@@ -41,7 +42,7 @@ async def get_channel_id(client_, channel_link):
 
 
 async def wait_for_code():
-    print("waiting for ccode.")
+    print("waiting for code.")
     time.sleep(60)
     load_dotenv(override=True)
     """Poll environment until CODE is available."""
@@ -84,10 +85,20 @@ async def main():
     await client.connect()
     print("📡 Connected to Telegram...")
     if not await client.is_user_authorized():
-        print("sending code to: {}".format(phone_number))
-        await client.send_code_request(phone_number)
-        code = await wait_for_code()
-        await login_tele(client, phone_number, code)
+        try:
+            print("sending code to: {}".format(phone_number))
+            await client.send_code_request(phone_number)
+            code = await wait_for_code()
+            await login_tele(client, phone_number, code)
+        except FloodWaitError as e:
+            print(e)
+            wait_time_ = re.search(r'\s(\d+)\s', str(e))
+            time.sleep(int(wait_time_.group(1)) + 5)
+            print("sending code again to: {}".format(phone_number))
+            await client.send_code_request(phone_number)
+            code = await wait_for_code()
+            await login_tele(client, phone_number, code)
+
     else:
         print("🔓 Already authorized.")
     me = await client.get_me()
