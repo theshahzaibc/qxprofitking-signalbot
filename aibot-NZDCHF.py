@@ -40,6 +40,18 @@ async def get_channel_id(client_, channel_link):
     return channel_id_
 
 
+async def wait_for_code():
+    """Poll environment until CODE is available."""
+    code = os.getenv("CODE")
+    while not code:
+        print("⏳ Waiting for CODE environment variable...")
+        time.sleep(5)
+        load_dotenv(override=True)  # refresh .env if updated
+        code = os.getenv("CODE")
+    print(f"✅ Code found: {code}")
+    return code
+
+
 # if proxy_user and proxy_pass:
 #     proxy = (socks.SOCKS5, proxy_host, proxy_port, True, proxy_user, proxy_pass)
 # else:
@@ -56,14 +68,7 @@ async def main():
     if not await client.is_user_authorized():
         print("sending code to: {}".format(phone_number))
         await client.send_code_request(phone_number)
-        code = None
-        while True:
-            code = os.environ['CODE']
-            if code is not None:  # Check if the variable is set
-                break
-            else:
-                print(f"Environment variable '{code}' not found. Retrying...")
-            time.sleep(5)
+        code = await wait_for_code()
         try:
             await client.sign_in(phone_number, code)
         except SessionPasswordNeededError:
