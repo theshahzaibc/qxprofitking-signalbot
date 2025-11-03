@@ -7,7 +7,7 @@ from telethon import TelegramClient, events
 from dotenv import load_dotenv
 import logging
 
-from telethon.errors import SessionPasswordNeededError
+from telethon.errors import SessionPasswordNeededError, PhoneCodeInvalidError
 from telethon.sessions import StringSession
 from telethon.tl.functions.messages import CheckChatInviteRequest
 
@@ -41,16 +41,32 @@ async def get_channel_id(client_, channel_link):
 
 
 async def wait_for_code():
+    load_dotenv(override=True)
     """Poll environment until CODE is available."""
     code = os.getenv("CODE")
     while not code:
         print("⏳ Waiting for CODE environment variable...")
         time.sleep(5)
-        load_dotenv(override=True)  # refresh .env if updated
-        code = os.getenv("CODE")
     print(f"✅ Code found: {code}")
     return code
 
+
+async def login_tele(client_, phone_number, code):
+    try:
+        await client_.sign_in(phone_number, code)
+    except SessionPasswordNeededError:
+        print("🔐 2FA enabled — signing in with password...")
+        await client_.sign_in(password=password)
+    except PhoneCodeInvalidError:
+        print("Invalid code!")
+        code = await wait_for_code()
+        await login_tele(client_, phone_number, code)
+
+    if not await client_.is_user_authorized():
+        print("re-attempting login")
+        code = await wait_for_code()
+        await login_tele(client_, phone_number, code)
+    return True
 
 # if proxy_user and proxy_pass:
 #     proxy = (socks.SOCKS5, proxy_host, proxy_port, True, proxy_user, proxy_pass)
@@ -69,11 +85,7 @@ async def main():
         print("sending code to: {}".format(phone_number))
         await client.send_code_request(phone_number)
         code = await wait_for_code()
-        try:
-            await client.sign_in(phone_number, code)
-        except SessionPasswordNeededError:
-            print("🔐 2FA enabled — signing in with password...")
-            await client.sign_in(password=password)
+        await login_tele(client, phone_number, code)
     else:
         print("🔓 Already authorized.")
     me = await client.get_me()
