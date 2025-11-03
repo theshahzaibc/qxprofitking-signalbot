@@ -7,7 +7,7 @@ from telethon import TelegramClient, events
 from dotenv import load_dotenv
 import logging
 
-from telethon.errors import SessionPasswordNeededError, PhoneCodeInvalidError
+from telethon.errors import SessionPasswordNeededError, PhoneCodeInvalidError, FloodWaitError
 from telethon.sessions import StringSession
 from telethon.tl.functions.messages import CheckChatInviteRequest
 
@@ -41,6 +41,7 @@ async def get_channel_id(client_, channel_link):
 
 
 async def wait_for_code():
+    time.sleep(60)
     load_dotenv(override=True)
     """Poll environment until CODE is available."""
     code = os.getenv("CODE")
