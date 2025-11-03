@@ -1,9 +1,14 @@
+import asyncio
 import os
+import time
+
 # import socks
 from telethon import TelegramClient, events
 from dotenv import load_dotenv
 import logging
 
+from telethon.errors import SessionPasswordNeededError
+from telethon.sessions import StringSession
 from telethon.tl.functions.messages import CheckChatInviteRequest
 
 load_dotenv()
@@ -11,6 +16,8 @@ api_id = int(os.environ['TELEGRAM_API_ID'])
 api_hash = os.environ['TELEGRAM_API_HASH']
 source_channel = os.environ['SOURCE_CHANNEL_AI']
 target_channel = os.environ['TARGET_NZDCHF_BOT']
+phone_number = os.environ['PHONE_NUM']
+password = os.getenv("TELEGRAM_PASSWORD")
 
 proxy_host = os.getenv("HTTP_PROXY_HOST", None)
 proxy_port = int(os.getenv("HTTP_PROXY_PORT", 0))
@@ -40,15 +47,35 @@ async def get_channel_id(client_, channel_link):
 
 logging.basicConfig(level=logging.INFO)
 
-client = TelegramClient('http_session', api_id, api_hash)
+client = TelegramClient('client_session', api_id, api_hash)
 
 
 async def main():
-    await client.start()
+    await client.connect()
+    print("📡 Connected to Telegram...")
+    if not await client.is_user_authorized():
+        print("sending code to: {}".format(phone_number))
+        await client.send_code_request(phone_number)
+        code = None
+        while True:
+            code = os.environ['CODE']
+            if code is not None:  # Check if the variable is set
+                break
+            else:
+                print(f"Environment variable '{code}' not found. Retrying...")
+            time.sleep(5)
+        try:
+            await client.sign_in(phone_number, code)
+        except SessionPasswordNeededError:
+            print("🔐 2FA enabled — signing in with password...")
+            await client.sign_in(password=password)
+    else:
+        print("🔓 Already authorized.")
     me = await client.get_me()
     logging.info("Logged in as: {}".format(me.username))
     target_channel_id = await get_channel_id(client, target_channel)
     source_channel_id = await get_channel_id(client, source_channel)
+
     # -1002765478569 source channel
 
     @client.on(events.NewMessage(chats=source_channel_id))
@@ -73,5 +100,5 @@ async def main():
     await client.run_until_disconnected()  # ⬅️ KEEP LISTENING
 
 
-with client:
-    client.loop.run_until_complete(main())
+if __name__ == "__main__":
+    asyncio.run(main())
