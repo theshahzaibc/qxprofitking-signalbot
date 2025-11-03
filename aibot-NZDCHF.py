@@ -41,32 +41,33 @@ async def get_channel_id(client_, channel_link):
 
 
 async def wait_for_code():
+    print("waiting for ccode.")
     time.sleep(60)
     load_dotenv(override=True)
     """Poll environment until CODE is available."""
     code = os.getenv("CODE")
     while not code:
         print("⏳ Waiting for CODE environment variable...")
-        time.sleep(5)
+        time.sleep(20)
     print(f"✅ Code found: {code}")
     return code
 
 
-async def login_tele(client_, phone_number, code):
+async def login_tele(client_, phone_number_, code_):
     try:
-        await client_.sign_in(phone_number, code)
+        await client_.sign_in(phone_number_, code_)
     except SessionPasswordNeededError:
         print("🔐 2FA enabled — signing in with password...")
         await client_.sign_in(password=password)
     except PhoneCodeInvalidError:
         print("Invalid code!")
         code = await wait_for_code()
-        await login_tele(client_, phone_number, code)
+        await login_tele(client_, phone_number_, code)
 
     if not await client_.is_user_authorized():
         print("re-attempting login")
         code = await wait_for_code()
-        await login_tele(client_, phone_number, code)
+        await login_tele(client_, phone_number_, code)
     return True
 
 # if proxy_user and proxy_pass:
