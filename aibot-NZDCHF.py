@@ -45,7 +45,7 @@ async def wait_for_code():
     print("waiting for code.")
     time.sleep(60)
     load_dotenv(override=True)
-    """Poll environment until CODE is available."""
+    """environment until CODE is available."""
     code = os.getenv("CODE")
     while not code:
         print("⏳ Waiting for CODE environment variable...")
