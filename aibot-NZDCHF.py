@@ -71,6 +71,7 @@ async def login_tele(client_, phone_number_, code_):
         await login_tele(client_, phone_number_, code)
     return True
 
+
 # if proxy_user and proxy_pass:
 #     proxy = (socks.SOCKS5, proxy_host, proxy_port, True, proxy_user, proxy_pass)
 # else:
@@ -78,7 +79,16 @@ async def login_tele(client_, phone_number_, code_):
 
 logging.basicConfig(level=logging.INFO)
 
-client = TelegramClient('client_session', api_id, api_hash)
+with TelegramClient(StringSession(), api_id, api_hash) as client:
+    print("\n\n===== COPY THIS SESSION STRING BELOW =====\n")
+    print(client.session.save())
+    print("\n===== COPY THIS SESSION STRING ABOVE =====\n")
+    time.sleep(30)
+
+session_string = os.getenv("SESSION_STRING")
+client = TelegramClient(StringSession(session_string), api_id, api_hash)
+client.session.set_dc = lambda *args, **kwargs: None  # Prevents Telethon from writing to disk
+client.session.save = lambda *args, **kwargs: None
 
 
 async def main():
