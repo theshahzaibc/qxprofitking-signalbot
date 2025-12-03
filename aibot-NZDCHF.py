@@ -24,6 +24,7 @@ proxy_host = os.getenv("HTTP_PROXY_HOST", None)
 proxy_port = int(os.getenv("HTTP_PROXY_PORT", 0))
 proxy_user = os.getenv("HTTP_PROXY_USER", None)
 proxy_pass = os.getenv("HTTP_PROXY_PASS", None)
+session_string = os.getenv("SESSION_STRING")
 
 
 async def get_channel_id(client_, channel_link):
@@ -78,14 +79,6 @@ async def login_tele(client_, phone_number_, code_):
 #     proxy = ('http', proxy_host, proxy_port)
 
 logging.basicConfig(level=logging.INFO)
-
-with TelegramClient(StringSession(), api_id, api_hash) as client:
-    print("\n\n===== COPY THIS SESSION STRING BELOW =====\n")
-    print(client.session.save())
-    print("\n===== COPY THIS SESSION STRING ABOVE =====\n")
-    time.sleep(30)
-
-session_string = os.getenv("SESSION_STRING")
 client = TelegramClient(StringSession(session_string), api_id, api_hash)
 client.session.set_dc = lambda *args, **kwargs: None  # Prevents Telethon from writing to disk
 client.session.save = lambda *args, **kwargs: None
