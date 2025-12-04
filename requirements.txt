@@ -4,3 +4,4 @@ python-dotenv==1.2.1
 python-telegram-bot==22.5
 socks==0
 Telethon==1.41.2
+flask

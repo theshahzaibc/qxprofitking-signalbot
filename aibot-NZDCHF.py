@@ -1,8 +1,10 @@
 import asyncio
 import os
 import re
+import threading
 import time
 
+from flask import Flask
 # import socks
 from telethon import TelegramClient, events
 from dotenv import load_dotenv
@@ -11,6 +13,25 @@ import logging
 from telethon.errors import SessionPasswordNeededError, PhoneCodeInvalidError, FloodWaitError
 from telethon.sessions import StringSession
 from telethon.tl.functions.messages import CheckChatInviteRequest
+# -------------------------------
+# 1️⃣ START DUMMY FLASK WEB SERVER
+# -------------------------------
+
+app = Flask(__name__)
+
+
+@app.route('/')
+def home():
+    return "🚀 Telegram Bot is Running on Render!"
+
+
+def run_web():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
+
+# Start Flask server in background
+threading.Thread(target=run_web).start()
 
 load_dotenv()
 api_id = int(os.environ['TELEGRAM_API_ID'])

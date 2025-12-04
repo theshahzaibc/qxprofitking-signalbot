@@ -1,5 +1,6 @@
 import os
 import re
+import threading
 
 import telethon
 from telethon import TelegramClient, events
@@ -8,8 +9,26 @@ from telethon import connection
 from telethon.network import ConnectionTcpMTProxyIntermediate
 from telethon.sessions import StringSession
 import logging
-
+from flask import Flask
 from telethon.tl.functions.messages import CheckChatInviteRequest
+
+# -------------------------------
+# 1️⃣ START DUMMY FLASK WEB SERVER
+# -------------------------------
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "🚀 Telegram Bot is Running on Render!"
+
+def run_web():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
+# Start Flask server in background
+threading.Thread(target=run_web).start()
+
 
 load_dotenv()
 api_id = int(os.environ['TELEGRAM_API_ID'])
