@@ -97,8 +97,6 @@ async def main():
             modified_text = modified_text.replace("𝗤𝘂𝗼𝘁𝗲𝘅 𝗚𝘂𝗿𝘂", "QXProfitKing")
             if "FreeSignals_Trading" in source_channel:
                 modified_text = modified_text + "\n\n\n━━━━━━━━━━━━━━━\n⚡ Powered By: QXProfitKing ⚡\n📩 Contact: @QuotexProfitKing"
-            if len(modified_text) < 50:
-                modified_text = modified_text + "\n\n\n━━━━━━━━━━━━━━━\n⚡ Powered By: QXProfitKing ⚡\n📩 Contact: @QuotexProfitKing"
             await client.send_message(target_channel_id, modified_text)
             logging.info("Message forwarded:", modified_text)
         except Exception as e:
