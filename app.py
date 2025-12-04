@@ -98,9 +98,9 @@ async def main():
             if "FreeSignals_Trading" in source_channel:
                 modified_text = modified_text + "\n\n\n━━━━━━━━━━━━━━━\n⚡ Powered By: QXProfitKing ⚡\n📩 Contact: @QuotexProfitKing"
             await client.send_message(target_channel_id, modified_text)
-            logging.info("Message forwarded:", modified_text)
+            logging.info("Message forwarded: {}".format(modified_text))
         except Exception as e:
-            logging.error("Error:", e)
+            logging.error("Error: {}".format(str(e)))
     logging.info("🚀 Bot is running and waiting for messages...")
     await client.run_until_disconnected()  # ⬅️ KEEP LISTENING
 
