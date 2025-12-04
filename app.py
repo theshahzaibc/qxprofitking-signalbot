@@ -32,7 +32,7 @@ api_id = int(os.environ['TELEGRAM_API_ID'])
 api_hash = os.environ['TELEGRAM_API_HASH']
 source_channel = os.environ['SOURCE_CHANNEL']
 target_channel = os.environ['TARGET_CHANNEL']
-
+REF_URL = os.environ['REF_URL']
 proxy_host = os.getenv("HTTP_PROXY_HOST", None)
 proxy_port = int(os.getenv("HTTP_PROXY_PORT", 0))
 proxy_user = os.getenv("HTTP_PROXY_USER", None)
@@ -85,16 +85,15 @@ async def main():
                 return  # ignore non-text messages
 
             original_text = event.message.text
-
-            modified_text = original_text.replace("https://broker-qx.pro/sign-up/?lid=652819",
-                                                  "https://market-qx.trade/en/sign-up?lid=1608650")
-            modified_text = modified_text.replace("https://broker-qx.pro/sign-up/?lid=1200739",
-                                                  "https://market-qx.trade/en/sign-up?lid=1608650")
+            if "FreeSignals_Trading" in source_channel:
+                original_text = "TIME ZONE: (UTC-03:00)\n\n" + original_text
+            modified_text = original_text.replace("https://broker-qx.pro/sign-up/?lid=652819", REF_URL)
+            modified_text = modified_text.replace("https://broker-qx.pro/sign-up/?lid=1200739", REF_URL)
             modified_text = modified_text.replace("Masterguru", "QXPROFITKING")
-
             modified_text = modified_text.replace("@Binnerytrader", "@QuotexProfitKing")
             modified_text = modified_text.replace("𝑸𝑼𝑶𝑻𝑬𝑿 𝑮𝑼𝑹𝑼", "QXProfitKing")
             modified_text = modified_text.replace("𝗤𝘂𝗼𝘁𝗲𝘅 𝗚𝘂𝗿𝘂", "QXProfitKing")
+            modified_text = modified_text + "\n\n CREATE YOUR ACCOUNT \n{}\n\n".format(REF_URL)
             if "FreeSignals_Trading" in source_channel:
                 modified_text = modified_text + "\n\n\n━━━━━━━━━━━━━━━\n⚡ Powered By: QXProfitKing ⚡\n📩 Contact: @QuotexProfitKing"
             await client.send_message(target_channel_id, modified_text)
