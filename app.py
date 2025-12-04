@@ -100,7 +100,6 @@ async def main():
             logging.info("Message forwarded:", modified_text)
         except Exception as e:
             logging.error("Error:", e)
-
     logging.info("🚀 Bot is running and waiting for messages...")
     await client.run_until_disconnected()  # ⬅️ KEEP LISTENING
 
