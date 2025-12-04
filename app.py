@@ -4,28 +4,27 @@ from telethon import TelegramClient, events
 from dotenv import load_dotenv
 from telethon.sessions import StringSession
 import logging
-from flask import Flask
+import uvicorn
+import asyncio
+from fastapi import FastAPI
+from fastapi.responses import PlainTextResponse
 from telethon.tl.functions.messages import CheckChatInviteRequest
 
 # -------------------------------
 # 1️⃣ START DUMMY FLASK WEB SERVER
 # -------------------------------
 
-app = Flask(__name__)
+app = FastAPI()
 
 
-@app.route('/')
-def home():
-    return "🚀 Telegram Bot is Running on Render!"
+@app.get("/", response_class=PlainTextResponse)
+async def home():
+    return "Bot is running successfully on Render!"
 
 
-def run_web():
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
-
-
-# Start Flask server in background
-threading.Thread(target=run_web).start()
+@app.api_route("/health", methods=["GET", "HEAD", "POST", "PUT"])
+async def health_check():
+    return {"status": "ok"}
 
 load_dotenv()
 api_id = int(os.environ['TELEGRAM_API_ID'])
@@ -62,16 +61,16 @@ client.session.set_dc = lambda *args, **kwargs: None  # Prevents Telethon from w
 client.session.save = lambda *args, **kwargs: None
 
 
-async def main():
+async def telethon_main():
     await client.connect()
     logging.info("📡 Connected to Telegram...")
     if not await client.is_user_authorized():
-        logging.error("PLEASE GENERATE TELEGRAM SESSION_STRING.")
-
+        logging.error("❌ ERROR: SESSION_STRING invalid or expired.")
+        return
     else:
         logging.info("🔓 Already authorized.")
-    me = await client.get_me()
-    logging.info("Logged in as: {}".format(me.username))
+        me = await client.get_me()
+        logging.info("Logged in as: {}".format(me.username))
     target_channel_id = await get_channel_id(client, target_channel)
     source_channel_id = await get_channel_id(client, source_channel)
     logging.info("TARGET CHANNEL: {} | ID: {}".format(target_channel, target_channel_id))
@@ -100,9 +99,21 @@ async def main():
             logging.info("Message forwarded: {}".format(modified_text))
         except Exception as e:
             logging.error("Error: {}".format(str(e)))
+
     logging.info("🚀 Bot is running and waiting for messages...")
     await client.run_until_disconnected()  # ⬅️ KEEP LISTENING
 
 
-with client:
-    client.loop.run_until_complete(main())
+def start_telethon():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(telethon_main())
+
+
+if __name__ == "__main__":
+    # Start Telethon bot in a background thread
+    threading.Thread(target=start_telethon, daemon=True).start()
+
+    # Start FastAPI server on Render's assigned PORT
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
