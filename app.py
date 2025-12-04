@@ -85,6 +85,7 @@ async def main():
                 return  # ignore non-text messages
 
             original_text = event.message.text
+
             modified_text = original_text.replace("https://broker-qx.pro/sign-up/?lid=652819",
                                                   "https://market-qx.trade/en/sign-up?lid=1608650")
             modified_text = modified_text.replace("https://broker-qx.pro/sign-up/?lid=1200739",
@@ -94,6 +95,8 @@ async def main():
             modified_text = modified_text.replace("@Binnerytrader", "@QuotexProfitKing")
             modified_text = modified_text.replace("𝑸𝑼𝑶𝑻𝑬𝑿 𝑮𝑼𝑹𝑼", "QXProfitKing")
             modified_text = modified_text.replace("𝗤𝘂𝗼𝘁𝗲𝘅 𝗚𝘂𝗿𝘂", "QXProfitKing")
+            if "FreeSignals_Trading" in source_channel:
+                modified_text = modified_text + "\n\n\n━━━━━━━━━━━━━━━\n⚡ Powered By: QXProfitKing ⚡\n📩 Contact: @QuotexProfitKing"
             if len(modified_text) < 50:
                 modified_text = modified_text + "\n\n\n━━━━━━━━━━━━━━━\n⚡ Powered By: QXProfitKing ⚡\n📩 Contact: @QuotexProfitKing"
             await client.send_message(target_channel_id, modified_text)
