@@ -1,12 +1,7 @@
 import os
-import re
 import threading
-
-import telethon
 from telethon import TelegramClient, events
 from dotenv import load_dotenv
-from telethon import connection
-from telethon.network import ConnectionTcpMTProxyIntermediate
 from telethon.sessions import StringSession
 import logging
 from flask import Flask
@@ -18,17 +13,19 @@ from telethon.tl.functions.messages import CheckChatInviteRequest
 
 app = Flask(__name__)
 
+
 @app.route('/')
 def home():
     return "🚀 Telegram Bot is Running on Render!"
+
 
 def run_web():
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
 
+
 # Start Flask server in background
 threading.Thread(target=run_web).start()
-
 
 load_dotenv()
 api_id = int(os.environ['TELEGRAM_API_ID'])
@@ -60,20 +57,25 @@ async def get_channel_id(client_, channel_link):
 
 logging.basicConfig(level=logging.INFO)
 
-
 client = TelegramClient(StringSession(session_string), api_id, api_hash)
 client.session.set_dc = lambda *args, **kwargs: None  # Prevents Telethon from writing to disk
 client.session.save = lambda *args, **kwargs: None
 
 
 async def main():
-    await client.start()
+    await client.connect()
+    logging.info("📡 Connected to Telegram...")
+    if not await client.is_user_authorized():
+        logging.error("PLEASE GENERATE TELEGRAM SESSION_STRING.")
+
+    else:
+        logging.info("🔓 Already authorized.")
     me = await client.get_me()
-    print("Logged in as:", me.username or me.phone)
+    logging.info("Logged in as: {}".format(me.username))
     target_channel_id = await get_channel_id(client, target_channel)
     source_channel_id = await get_channel_id(client, source_channel)
-    print(target_channel_id)
-    print(source_channel_id)
+    logging.info("TARGET CHANNEL: {} | ID: {}".format(target_channel, target_channel_id))
+    logging.info("SOURCE CHANNEL: {} | ID: {}".format(source_channel, source_channel_id))
 
     @client.on(events.NewMessage(chats=source_channel_id))
     async def handler(event):
@@ -83,10 +85,10 @@ async def main():
                 return  # ignore non-text messages
 
             original_text = event.message.text
-            modified_text = "---------------\nSPECIAL CHANNEL SIGNAL\n---------------\n" + original_text
-            modified_text = modified_text + "\n\n\n━━━━━━━━━━━━━━━\n⚡ Powered By: QXProfitKing ⚡\n📩 Contact: @QuotexProfitKing"
-            modified_text = modified_text.replace("https://broker-qx.pro/sign-up/?lid=652819", "https://market-qx.trade/en/sign-up?lid=1608650")
-            modified_text = modified_text.replace("https://broker-qx.pro/sign-up/?lid=1200739", "https://market-qx.trade/en/sign-up?lid=1608650")
+            modified_text = original_text.replace("https://broker-qx.pro/sign-up/?lid=652819",
+                                                  "https://market-qx.trade/en/sign-up?lid=1608650")
+            modified_text = modified_text.replace("https://broker-qx.pro/sign-up/?lid=1200739",
+                                                  "https://market-qx.trade/en/sign-up?lid=1608650")
             modified_text = modified_text.replace("Masterguru", "QXPROFITKING")
 
             modified_text = modified_text.replace("@Binnerytrader", "@QuotexProfitKing")
@@ -95,11 +97,13 @@ async def main():
             if len(modified_text) < 50:
                 modified_text = modified_text + "\n\n\n━━━━━━━━━━━━━━━\n⚡ Powered By: QXProfitKing ⚡\n📩 Contact: @QuotexProfitKing"
             await client.send_message(target_channel_id, modified_text)
-            print("Message forwarded:", modified_text)
+            logging.info("Message forwarded:", modified_text)
         except Exception as e:
-            print("Error:", e)
-    print("🚀 Bot is running and waiting for messages...")
+            logging.error("Error:", e)
+
+    logging.info("🚀 Bot is running and waiting for messages...")
     await client.run_until_disconnected()  # ⬅️ KEEP LISTENING
+
 
 with client:
     client.loop.run_until_complete(main())
