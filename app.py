@@ -95,7 +95,7 @@ async def telethon_main():
             modified_text = modified_text + "\n\n CREATE YOUR ACCOUNT NOW\n{}\n\n".format(REF_URL)
             if "FreeSignals_Trading" in source_channel:
                 modified_text = modified_text + "\n━━━━━━━━━━━━━━━\n⚡ Powered By: QXProfitKing ⚡\n📩 Contact: @QuotexProfitKing"
-            await client.send_message(target_channel_id, modified_text)
+            await client.send_message(target_channel_id, modified_text, link_preview=False)
             logging.info("Message forwarded: {}".format(modified_text))
         except Exception as e:
             logging.error("Error: {}".format(str(e)))
