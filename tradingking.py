@@ -241,13 +241,16 @@ async def get_channel_id(client_, channel_link):
 
 logging.basicConfig(level=logging.INFO)
 
-client = TelegramClient(StringSession(session_string), api_id, api_hash)
-client.session.set_dc = lambda *args, **kwargs: None
-client.session.save = lambda *args, **kwargs: None
+client = None
 
 
 async def telethon_main():
-    global session_active
+    global session_active, client
+
+    client = TelegramClient(StringSession(session_string), api_id, api_hash)
+    client.session.set_dc = lambda *args, **kwargs: None
+    client.session.save = lambda *args, **kwargs: None
+
     await client.connect()
     logging.info("📡 Connected to Telegram...")
     if not await client.is_user_authorized():
