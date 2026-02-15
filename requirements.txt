@@ -6,3 +6,4 @@ socks==0
 Telethon==1.41.2
 uvicorn
 fastapi
+pytz~=2025.2
