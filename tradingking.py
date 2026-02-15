@@ -1,7 +1,10 @@
 import os
 import random
 import re
+import threading
 from datetime import datetime, timedelta, timezone
+
+import uvicorn
 from telethon import TelegramClient, events
 from dotenv import load_dotenv
 from telethon.helpers import add_surrogate
@@ -22,7 +25,7 @@ UTC_PLUS_530 = timezone(timedelta(hours=5, minutes=30))
 
 @app.get("/", response_class=PlainTextResponse)
 async def home():
-    return "Bot is running successfully on T_KING_VIP!"
+    return "Bot is running successfully on KING_VIP!"
 
 
 @app.api_route("/health", methods=["GET", "HEAD", "POST", "PUT"])
@@ -645,3 +648,12 @@ def start_telethon_king_vip():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(telethon_main())
+
+
+if __name__ == "__main__":
+    # Start Telethon bot in a background thread
+    threading.Thread(target=start_telethon_king_vip, daemon=True).start()
+
+    # Start FastAPI server on Render's assigned PORT
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
