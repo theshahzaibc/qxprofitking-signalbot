@@ -82,13 +82,14 @@ SESSION_SOON_PATTERN = re.compile(
     re.IGNORECASE
 )
 
-VALID_OTC_PAIRS = {
+VALID_OTC_PAIRS = [
     "EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF", "AUD/USD", "USD/CAD", "NZD/USD",
-    "EUR/GBP", "EUR/JPY", "GBP/JPY", "EUR/CHF", "GBP/CHF", "AUD/JPY", "CAD/JPY", "CHF/JPY",
+    "EUR/GBP", "EUR/JPY", "GBP/JPY", "EUR/CHF", "GBP/CHF", "AUD/JPY", "CAD/JPY",
     "USD/BRL", "USD/BDT", "USD/ARS", "USD/INR", "USD/PKR", "USD/TRY", "USD/IDR",
     "USD/NGN", "USD/MXN", "USD/CLP", "USD/COP", "USD/EGP", "USD/VND", "USD/THB",
-    "USD/MYR", "USD/PHP", "USD/KZT", "USD/AED", "USD/SAR", "USD/QAR", "USD/KWD", "USD/BHD", "AUD/CHF"
-}
+    "USD/MYR", "USD/PHP", "USD/KZT", "USD/AED", "USD/SAR", "USD/QAR", "USD/KWD",
+    "USD/BHD", "AUD/CHF", "NZD/CAD", "EUR/NZD", "CHF/JPY"
+]
 
 
 async def extract_pair(text):
