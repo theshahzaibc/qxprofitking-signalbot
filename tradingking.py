@@ -1,9 +1,10 @@
+import json
 import os
 import random
 import re
 import threading
 from datetime import datetime, timedelta, timezone
-
+import requests
 import uvicorn
 from telethon import TelegramClient, events
 from dotenv import load_dotenv
@@ -39,8 +40,9 @@ api_hash = os.environ['TELEGRAM_API_HASH']
 source_channel = os.environ['SOURCE_CHANNEL_KING_VIP']
 target_channel = os.environ['PUBLIC_TARGET_CHANNEL']
 REF_URL = os.environ['REF_URL']
-
+SMMHype = json.loads(os.environ['SMMHype'])
 session_string = os.getenv("SESSION_STRING")
+
 SESSION_START_ID = [6260306930074393118, 1032603446122905641]
 SESSION_CLOSE_ID = [6260074022587866684, 1032603446122905642]
 session_active = True
@@ -113,6 +115,26 @@ async def extract_pair(text):
     return None
 
 
+async def SMMHypeViews(link):
+    global SMMHype
+    logging.info("SENDING VIEW ORDER")
+    logging.info("Link: {}".format(link))
+    try:
+        API_URL = "https://smmhype.com/api/v2"
+        payload = {
+            "key": SMMHype["Key"],
+            "action": "add",
+            "service": SMMHype["views"]["service"],
+            "link": link,
+            "quantity": SMMHype["views"]["views_quantity"]
+        }
+        response = requests.post(API_URL, json=payload)
+        return response.json()
+    except:
+        logging.exception("An exception was thrown!")
+    return {}
+
+
 async def clean_text(text_content):
     modified_text = text_content
     try:
@@ -169,26 +191,27 @@ async def forward_album(event, modified_text, target_channel_id, source_channel_
                     break
             ent_m = event.entities
 
-            if media_text_regex.search(caption):
-                caption = random.choice(SHOTS_HASH_TAG)
-            if "@AJAYTRADER43" in caption:
-                caption = caption.replace("@AJAYTRADER43", "@QuotexProfitKing")
-                caption = caption.replace("@AJAYTRADER43".lower(), "@QuotexProfitKing")
-                try:
-                    safe_word = add_surrogate("@QuotexProfitKing")
-                    safe_text = add_surrogate(caption)
-                    offset = safe_text.find("@QuotexProfitKing")
-                    mtt = caption.split("@QuotexProfitKing")
-                    caption = mtt[0] + "@QuotexProfitKing✅" + mtt[-1]
-                    ent_m.append(
-                        MessageEntityCustomEmoji(
-                            offset=offset + len(safe_word),
-                            length=1,
-                            document_id=4985790168263820344
+            if caption:
+                if media_text_regex.search(caption):
+                    caption = random.choice(SHOTS_HASH_TAG)
+                if "@AJAYTRADER43" in caption:
+                    caption = caption.replace("@AJAYTRADER43", "@QuotexProfitKing")
+                    caption = caption.replace("@AJAYTRADER43".lower(), "@QuotexProfitKing")
+                    try:
+                        safe_word = add_surrogate("@QuotexProfitKing")
+                        safe_text = add_surrogate(caption)
+                        offset = safe_text.find("@QuotexProfitKing")
+                        mtt = caption.split("@QuotexProfitKing")
+                        caption = mtt[0] + "@QuotexProfitKing✅" + mtt[-1]
+                        ent_m.append(
+                            MessageEntityCustomEmoji(
+                                offset=offset + len(safe_word),
+                                length=1,
+                                document_id=4985790168263820344
+                            )
                         )
-                    )
-                except:
-                    logging.exception("An exception was thrown!")
+                    except:
+                        logging.exception("An exception was thrown!")
             logging.info(caption)
             sent_msgs = await client.send_file(
                 target_channel_id,
@@ -196,6 +219,9 @@ async def forward_album(event, modified_text, target_channel_id, source_channel_
                 caption=caption,
                 caption_entities=ent_m
             )
+            link = f"https://t.me/{(await client.get_entity(target_channel_id)).username}/{sent_msgs[0].id}"
+            res = await SMMHypeViews(link)
+            logging.info(res)
             forwarded_albums.add(grouped_id)
             for src_msg, dest_msg in zip(album_msgs, sent_msgs):
                 message_map[(event.chat_id, src_msg.id)] = dest_msg.id
@@ -323,6 +349,9 @@ async def telethon_main():
                     link_preview=False
                 )
                 message_map[(event.chat_id, event.id)] = sent.id
+                link = f"https://t.me/{(await client.get_entity(target_channel_id)).username}/{sent.id}"
+                res = await SMMHypeViews(link)
+                logging.info(res)
                 return
 
                 # logging.info(event.message)
@@ -372,6 +401,9 @@ async def telethon_main():
                             sent = await client.send_message(target_channel_id, msg['text'],
                                                              formatting_entities=msg['ent'])
                             message_map[(event.chat_id, event.id)] = sent.id
+                            link = f"https://t.me/{(await client.get_entity(target_channel_id)).username}/{sent.id}"
+                            res = await SMMHypeViews(link)
+                            logging.info(res)
                 except:
                     logging.exception("An exception was thrown!")
 
@@ -392,13 +424,16 @@ async def telethon_main():
                                 input_doc
                             )
                             message_map[(event.chat_id, event.id)] = sent.id
+                            link = f"https://t.me/{(await client.get_entity(target_channel_id)).username}/{sent.id}"
+                            res = await SMMHypeViews(link)
+                            logging.info(res)
                             break
                 except Exception as e:
                     logging.exception("An exception was thrown!")
                 logging.info("SESSION STARTED!")
                 return
 
-            if (getattr(msg, "sticker", None) and msg.sticker.id in SESSION_START_ID) and not session_active:
+            if getattr(msg, "sticker", None) and msg.sticker.id in SESSION_START_ID:
                 msg_sticker = msg.sticker
                 logging.info("SID {}".format(msg_sticker.id))
                 session_active = True
@@ -419,6 +454,10 @@ async def telethon_main():
                                     input_doc
                                 )
                                 message_map[(event.chat_id, event.id)] = sent.id
+                                link = f"https://t.me/{(await client.get_entity(target_channel_id)).username}/{sent.id}"
+
+                                res = await SMMHypeViews(link)
+                                logging.info(res)
                                 break
                 except Exception as e:
                     logging.exception("An exception was thrown!")
@@ -441,13 +480,15 @@ async def telethon_main():
                                 input_doc
                             )
                             message_map[(event.chat_id, event.id)] = sent.id
+                            link = f"https://t.me/{(await client.get_entity(target_channel_id)).username}/{sent.id}"
+                            res = await SMMHypeViews(link)
+                            logging.info(res)
                             break
                 except Exception as e:
                     logging.exception("An exception was thrown!")
                 logging.info("SESSION CLOSED!")
                 return
-            if (getattr(msg, "sticker",
-                        None) and msg.sticker.id in SESSION_CLOSE_ID) and session_active:
+            if getattr(msg, "sticker", None) and msg.sticker.id in SESSION_CLOSE_ID:
                 msg_sticker = msg.sticker
                 logging.info("SID {}".format(msg_sticker.id))
                 session_active = False
@@ -468,6 +509,9 @@ async def telethon_main():
                                     input_doc
                                 )
                                 message_map[(event.chat_id, event.id)] = sent.id
+                                link = f"https://t.me/{(await client.get_entity(target_channel_id)).username}/{sent.id}"
+                                res = await SMMHypeViews(link)
+                                logging.info(res)
                                 break
                 except Exception as e:
                     logging.exception("An exception was thrown!")
@@ -509,6 +553,7 @@ async def telethon_main():
                                         doc
                                     )
                                     sent_msgs.append(sent)
+
                                 sent_TEXT = await client.send_message(
                                     target_channel_id,
                                     SURE_SHOT_MSG,
@@ -516,11 +561,16 @@ async def telethon_main():
                                     link_preview=False
                                 )
                                 sent_msgs.append(sent_TEXT)
+
                                 if not isinstance(sent_msgs, list):
                                     sent_msgs = [sent_msgs]
 
                                     # Track sent sticker message IDs
                                 sent_stickers_for_msg[event.id] = [m.id for m in sent_msgs]
+                                for sent_m in sent_msgs:
+                                    link = f"https://t.me/{(await client.get_entity(target_channel_id)).username}/{sent_m.id}"
+                                    res = await SMMHypeViews(link)
+                                    logging.info(res)
                             for doc in sticker_set.documents:
                                 if str(doc.id) == STICKER_['id']:
                                     input_doc = InputDocument(
@@ -534,6 +584,9 @@ async def telethon_main():
                                         input_doc
                                     )
                                     message_map[(event.chat_id, event.id)] = sent.id
+                                    link = f"https://t.me/{(await client.get_entity(target_channel_id)).username}/{sent.id}"
+                                    res = await SMMHypeViews(link)
+                                    logging.info(res)
                                     break
                     except Exception as e:
                         sent = await client.send_file(
@@ -541,6 +594,9 @@ async def telethon_main():
                             msg.sticker
                         )
                         message_map[(event.chat_id, event.id)] = sent.id
+                        link = f"https://t.me/{(await client.get_entity(target_channel_id)).username}/{sent.id}"
+                        res = await SMMHypeViews(link)
+                        logging.info(res)
                 elif getattr(event, "grouped_id", None):
                     logging.info("group")
                     await forward_album(event, modified_text=modified_text, target_channel_id=target_channel_id,
@@ -564,6 +620,9 @@ async def telethon_main():
                         formatting_entities=ent_m
                     )
                     message_map[(event.chat_id, event.id)] = sent.id
+                    link = f"https://t.me/{(await client.get_entity(target_channel_id)).username}/{sent.id}"
+                    res = await SMMHypeViews(link)
+                    logging.info(res)
                 else:
                     logging.info("text")
                     ent_m = event.entities
@@ -610,7 +669,10 @@ async def telethon_main():
 
                             # Track sent sticker message IDs
                         sent_stickers_for_msg[event.id] = [m.id for m in sent_msgs]
-
+                        for sent_m in sent_msgs:
+                            link = f"https://t.me/{(await client.get_entity(target_channel_id)).username}/{sent_m.id}"
+                            res = await SMMHypeViews(link)
+                            logging.info(res)
                     if "Want 1 more sureshot like this?" in original_text:
                         modified_text = WANT_MORE
                         ent_m = WANT_MORE_ENT
@@ -637,6 +699,9 @@ async def telethon_main():
                         link_preview=False
                     )
                     message_map[(event.chat_id, event.id)] = sent.id
+                    link = f"https://t.me/{(await client.get_entity(target_channel_id)).username}/{sent.id}"
+                    res = await SMMHypeViews(link)
+                    logging.info(res)
                 logging.info("Relayed message during session.")
 
         except Exception as e:
