@@ -408,27 +408,20 @@ async def telethon_main():
                 except:
                     logging.exception("An exception was thrown!")
 
-            if ("Ready" in original_text or "Readyy..." in original_text) and not session_active:
+            if "be ready" in original_text.lower():
                 session_active = True
-                logging.info("READY TYUE")
                 try:
-                    for doc in sticker_set.documents:
-                        if str(doc.id) == "5769185348286421680":
-                            input_doc = InputDocument(
-                                id=doc.id,
-                                access_hash=doc.access_hash,
-                                file_reference=doc.file_reference
-                            )
-
-                            sent = await client.send_file(
-                                target_channel_id,
-                                input_doc
-                            )
-                            message_map[(event.chat_id, event.id)] = sent.id
-                            link = f"https://t.me/{(await client.get_entity(target_channel_id)).username}/{sent.id}"
-                            res = await SMMHypeViews(link)
-                            logging.info(res)
-                            break
+                    modified_text = await clean_text(original_text)
+                    sent = await client.send_message(
+                        target_channel_id,
+                        modified_text,
+                        formatting_entities=event.entities,
+                        link_preview=False
+                    )
+                    message_map[(event.chat_id, event.id)] = sent.id
+                    link = f"https://t.me/{(await client.get_entity(target_channel_id)).username}/{sent.id}"
+                    res = await SMMHypeViews(link)
+                    logging.info(res)
                 except Exception as e:
                     logging.exception("An exception was thrown!")
                 logging.info("SESSION STARTED!")
