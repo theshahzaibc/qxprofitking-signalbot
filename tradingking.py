@@ -123,16 +123,17 @@ async def SMMHypeViews(link):
     logging.info("SENDING VIEW ORDER")
     logging.info("Link: {}".format(link))
     try:
-        API_URL = "https://smmhype.com/api/v2"
-        payload = {
-            "key": SMMHype["Key"],
-            "action": "add",
-            "service": SMMHype["views"]["service"],
-            "link": link,
-            "quantity": SMMHype["views"]["quantity"]
-        }
-        response = requests.post(API_URL, json=payload)
-        return response.json()
+        if SMMHype["views"]["quantity"]:
+            API_URL = "https://smmhype.com/api/v2"
+            payload = {
+                "key": SMMHype["Key"],
+                "action": "add",
+                "service": SMMHype["views"]["service"],
+                "link": link,
+                "quantity": SMMHype["views"]["quantity"]
+            }
+            response = requests.post(API_URL, json=payload)
+            return response.json()
     except:
         logging.exception("An exception was thrown!")
     return {}
@@ -145,17 +146,18 @@ async def SMMHypeReactions(link):
     logging.info("SENDING Reaction ORDER")
     logging.info("Link: {}".format(link))
     try:
-        quantity = SMMHype["reaction"]["quantity"].split("-")
-        API_URL = "https://smmhype.com/api/v2"
-        payload = {
-            "key": SMMHype["Key"],
-            "action": "add",
-            "service": SMMHype["reaction"]["service"],
-            "link": link,
-            "quantity": random.randint(int(quantity[0]), int(quantity[-1]))
-        }
-        response = requests.post(API_URL, json=payload)
-        return response.json()
+        if SMMHype["reaction"]["quantity"]:
+            quantity = SMMHype["reaction"]["quantity"].split("-")
+            API_URL = "https://smmhype.com/api/v2"
+            payload = {
+                "key": SMMHype["Key"],
+                "action": "add",
+                "service": SMMHype["reaction"]["service"],
+                "link": link,
+                "quantity": random.randint(int(quantity[0]), int(quantity[-1]))
+            }
+            response = requests.post(API_URL, json=payload)
+            return response.json()
     except:
         logging.exception("An exception was thrown!")
     return {}
